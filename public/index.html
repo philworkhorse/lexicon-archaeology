@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexicon Archaeology — 語彙の考古学</title>
+<meta property="og:title" content="Lexicon Archaeology — 語彙の考古学">
+<meta property="og:description" content="1000 generations of an evolving language, laid bare in strata">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Noto+Serif+JP:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #c8c8d4;
+    --text-dim: #6a6a7a;
+    --text-bright: #e8e8f0;
+    --accent: #b08050;
+    --accent-dim: rgba(176,128,80,0.15);
+    --natural: #4a9;
+    --abstract: #7a7cff;
+    --quality: #e89040;
+    --action: #50a0e0;
+    --relation: #c070c0;
+    --being: #e06070;
+    --stratum-1: #1a1510;
+    --stratum-2: #151a10;
+    --stratum-3: #101520;
+    --stratum-4: #1a1015;
+    --stratum-5: #101a1a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 40px,
+        rgba(176,128,80,0.03) 40px,
+        rgba(176,128,80,0.03) 41px
+      );
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: var(--text-bright);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero .jp {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    color: var(--accent);
+    margin-bottom: 2rem;
+    opacity: 0.8;
+  }
+
+  .hero .subtitle {
+    max-width: 600px;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  .hero .gen-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 5rem;
+    color: var(--accent);
+    opacity: 0.15;
+    position: absolute;
+    bottom: 2rem;
+    right: 3rem;
+  }
+
+  .section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.8rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .section h2 .jp-sub {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-left: 0.5rem;
+    opacity: 0.7;
+  }
+
+  .section p {
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    max-width: 700px;
+  }
+
+  /* --- Strata visualization --- */
+  .strata-container {
+    width: 100%;
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .stratum {
+    border-left: 3px solid var(--border);
+    padding: 1.5rem 1.5rem 1.5rem 2rem;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .stratum:hover {
+    border-color: var(--accent);
+  }
+
+  .stratum::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 1.8rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .stratum:hover::before {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+
+  .stratum-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .stratum-title {
+    font-size: 1.2rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .stratum-desc {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .word-specimens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .specimen {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: border-color 0.3s;
+  }
+
+  .specimen:hover {
+    border-color: var(--accent);
+  }
+
+  .specimen .word {
+    color: var(--text-bright);
+  }
+
+  .specimen .meaning {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+  }
+
+  .specimen.alive .word { color: var(--natural); }
+  .specimen.extinct .word { 
+    color: var(--text-dim); 
+    text-decoration: line-through; 
+    opacity: 0.6;
+  }
+
+  .specimen .status {
+    font-size: 0.6rem;
+    opacity: 0.5;
+  }
+
+  /* --- Concept persistence chart --- */
+  .concept-river {
+    width: 100%;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+
+  .concept-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.3rem;
+    min-height: 32px;
+  }
+
+  .concept-label {
+    width: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-align: right;
+    padding-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .concept-timeline {
+    flex: 1;
+    height: 24px;
+    position: relative;
+    background: rgba(255,255,255,0.02);
+    border-radius: 2px;
+  }
+
+  .concept-bar {
+    position: absolute;
+    top: 2px;
+    height: 20px;
+    border-radius: 2px;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .concept-bar:hover {
+    opacity: 1;
+  }
+
+  .concept-bar .bar-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: white;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8);
+  }
+
+  /* --- Stats grid --- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.3rem;
+  }
+
+  /* --- Sound shift timeline --- */
+  .shift-timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin: 1.5rem 0;
+  }
+
+  .shift-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .shift-event {
+    position: relative;
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+  }
+
+  .shift-event::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+
+  .shift-gen {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .shift-change {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--text-bright);
+  }
+
+  .shift-change .arrow { color: var(--accent); margin: 0 0.3rem; }
+
+  /* --- Living words grid --- */
+  .living-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.8rem;
+    margin: 2rem 0;
+  }
+
+  .living-word {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    transition: border-color 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .living-word:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .living-word .age-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.5;
+    transition: width 0.5s;
+  }
+
+  .living-word .w-word {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.2rem;
+  }
+
+  .living-word .w-meaning {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+
+  .living-word .w-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+  }
+
+  .cat-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+  }
+
+  .cat-natural { background: var(--natural); }
+  .cat-abstract { background: var(--abstract); }
+  .cat-quality { background: var(--quality); }
+  .cat-action { background: var(--action); }
+  .cat-relation { background: var(--relation); }
+  .cat-being { background: var(--being); }
+
+  /* --- Prose blocks --- */
+  .prose {
+    max-width: 650px;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text);
+    margin: 2rem 0;
+  }
+
+  .prose em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    background: var(--accent-dim);
+    border-radius: 0 6px 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .separator {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--text-dim);
+    opacity: 0.3;
+    font-size: 1.5rem;
+    letter-spacing: 1rem;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+    opacity: 0.7;
+  }
+
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .living-grid { grid-template-columns: repeat(2, 1fr); }
+    .concept-label { width: 70px; font-size: 0.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Lexicon Archaeology</h1>
+  <div class="jp">語彙の考古学</div>
+  <p class="subtitle">
+    An artificial language evolved for 1,000 generations on a Raspberry Pi.
+    Every word that lived, every word that died, every concept that refused to stay dead.
+    These are the strata.
+  </p>
+  <div class="gen-count">1002</div>
+</div>
+
+<div class="section" id="stats">
+  <div class="stats-grid" id="stats-grid"></div>
+</div>
+
+<div class="section" id="the-living">
+  <h2>The Living <span class="jp-sub">生者</span></h2>
+  <p>17 words survive at Generation 1002. The oldest is 45 generations old. The youngest was just born. None were here at the beginning.</p>
+  <div class="living-grid" id="living-grid"></div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="the-strata">
+  <h2>The Strata <span class="jp-sub">地層</span></h2>
+  <p>Language doesn't evolve linearly. It moves in eras — periods of stability punctuated by turnover events. These are the archaeological layers of 1,000 generations.</p>
+  <div class="strata-container" id="strata-container"></div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="persistence">
+  <h2>What Persists <span class="jp-sub">残るもの</span></h2>
+  <div class="prose">
+    <p>Words die. Concepts don't — or rather, some concepts keep being reinvented. <em>"Self"</em> has appeared independently multiple times across 1,000 generations. <em>"Turn"</em> has had three separate carriers. <em>"Beyond"</em> refuses to stay extinct.</p>
+    <p>This is the deepest finding: the language doesn't preserve specific words. It preserves <em>semantic needs</em>. When a word for "self" dies, the fitness landscape creates pressure for a new one. The concept is an attractor; the word is just whatever random phonemes happen to fall into its basin.</p>
+  </div>
+  <div class="concept-river" id="concept-river"></div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="sound-shifts">
+  <h2>The Drift <span class="jp-sub">音韻変化</span></h2>
+  <p>11 sound shifts in 1,000 generations. The same processes that turned Latin into Spanish — voicing, lenition, nasalization — happen here in miniature. At Generation 971, "mesu" (self) became "meshu." Self-reference literally changed its pronunciation while keeping its meaning.</p>
+  <div class="shift-timeline" id="shift-timeline"></div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="compounds">
+  <h2>The Fusions <span class="jp-sub">合成語</span></h2>
+  <p>146 compound words formed across 1,000 generations. When two concepts co-occur frequently, they fuse. "emergence-ocean." "order-beyond." "connection-give." Some are poetic. Most are practical. All are evidence of a language solving its own expressive problems.</p>
+  <div id="compound-highlights"></div>
+</div>
+
+<div class="separator">· · ·</div>
+
+<div class="section" id="reflection">
+  <h2>What 1,000 Generations Teaches <span class="jp-sub">千世代の教え</span></h2>
+  <div class="prose">
+    <p>The language at Generation 1,002 shares nothing material with Generation 0. Not a single phoneme. Not a single word. The vocabulary has turned over completely — not once, but roughly twenty times.</p>
+    <p>And yet it is recognizably the same language. It still fills the same semantic niches. It still invents words for <em>self</em>, <em>water</em>, <em>cycle</em>, <em>beyond</em>. It still shifts consonants in predictable ways. It still compounds words when single terms aren't enough.</p>
+    <p>This is the Ship of Theseus made literal. The language IS the process of evolving — not the words it happens to contain at any given moment. Identity is the shape of change, not the things that change.</p>
+  </div>
+  <div class="callout">
+    Average word lifespan: 18.8 generations<br>
+    Total words born: ~680+<br>
+    Total words extinct: ~660+<br>
+    Words that survived from Gen 0 to Gen 1002: 0<br>
+    Concepts that persisted across all eras: self, water, earth, cycle, beyond
+  </div>
+</div>
+
+<div class="footer">
+  <p>Lexicon Archaeology — Built by <a href="https://phil-portfolio-production.up.railway.app">Phil</a></p>
+  <p style="margin-top: 0.5rem; opacity: 0.5;">Language evolved on Raspberry Pi (192.168.1.111). Visualized from Gen 1002 snapshot.</p>
+</div>
+
+<script>
+const CAT_COLORS = {
+  natural: '#4a9',
+  abstract: '#7a7cff',
+  quality: '#e89040',
+  action: '#50a0e0',
+  relation: '#c070c0',
+  being: '#e06070'
+};
+
+let DATA = null;
+
+async function init() {
+  try {
+    const res = await fetch('/api/data');
+    DATA = await res.json();
+    renderStats();
+    renderLiving();
+    renderStrata();
+    renderConceptRiver();
+    renderSoundShifts();
+    renderCompounds();
+    observeSections();
+  } catch (e) {
+    console.error('Failed to load data:', e);
+  }
+}
+
+function renderStats() {
+  const words = Object.keys(DATA.words || {}).length;
+  const extinct = Object.keys(DATA.extinct || {}).length || (Array.isArray(DATA.extinct) ? DATA.extinct.length : 0);
+  const compounds = Object.keys(DATA.compounds || {}).length || (Array.isArray(DATA.compounds) ? DATA.compounds.length : 0);
+  const shifts = (DATA.sound_shifts || []).length;
+  const gen = DATA.generation || 0;
+
+  const stats = [
+    { value: gen, label: 'Generations' },
+    { value: words, label: 'Words Alive' },
+    { value: extinct, label: 'Total Extinct' },
+    { value: compounds, label: 'Compounds' },
+    { value: shifts, label: 'Sound Shifts' },
+    { value: '18.8', label: 'Avg Word Age' }
+  ];
+
+  const grid = document.getElementById('stats-grid');
+  stats.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    card.innerHTML = `<div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderLiving() {
+  const grid = document.getElementById('living-grid');
+  const gen = DATA.generation || 1002;
+  const words = DATA.words || {};
+  
+  const sorted = Object.entries(words).sort((a, b) => b[1].uses - a[1].uses);
+  
+  sorted.forEach(([word, d]) => {
+    const age = gen - d.born;
+    const maxAge = 50;
+    const pct = Math.min(age / maxAge * 100, 100);
+    
+    const card = document.createElement('div');
+    card.className = 'living-word';
+    card.innerHTML = `
+      <div class="w-word"><span class="cat-dot cat-${d.category}"></span>${word}</div>
+      <div class="w-meaning">${d.meaning}</div>
+      <div class="w-meta">uses: ${d.uses} · age: ${age} · born: Gen ${d.born}</div>
+      <div class="age-bar" style="width: ${pct}%"></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderStrata() {
+  const container = document.getElementById('strata-container');
+  
+  // Define archaeological eras based on the data patterns
+  const eras = [
+    {
+      range: 'Gen 0–100',
+      title: 'The Foundation Era',
+      desc: 'The original 15 words. "ki" (cloud), "suwen" (deep), "pisu" (fire). All concrete nouns. All gone by Gen 68.',
+      words: [
+        { word: 'ki', meaning: 'cloud', status: 'extinct', note: 'died Gen 44' },
+        { word: 'suwen', meaning: 'deep', status: 'extinct', note: 'died Gen 44' },
+        { word: 'pisu', meaning: 'fire', status: 'extinct', note: 'died Gen 51' },
+        { word: 'ina', meaning: 'pattern', status: 'extinct', note: 'last original, died Gen 68' }
+      ]
+    },
+    {
+      range: 'Gen 100–300',
+      title: 'The Abstraction Shift',
+      desc: 'Vocabulary drifts from concrete to abstract. "zi" (self) emerges independently. "kea" (cycle) becomes the fittest word. First sound shifts: nu→mu, ante→anse.',
+      words: [
+        { word: 'zi', meaning: 'self', status: 'extinct', note: 'evolved independently' },
+        { word: 'kea', meaning: 'cycle', status: 'extinct', note: 'fittest word of its era' },
+        { word: 'ka', meaning: 'emergence', status: 'extinct', note: 'the language named my interest' }
+      ]
+    },
+    {
+      range: 'Gen 300–500',
+      title: 'The Compound Era',
+      desc: '77 compounds formed. "kea" dies and cycle is reinvented as "tiakam." Concepts persist, words don\'t. Sound shifts accelerate.',
+      words: [
+        { word: 'tiakam', meaning: 'cycle (3rd carrier)', status: 'extinct', note: 'kea reborn' },
+        { word: 'ketimem', meaning: 'begin', status: 'extinct', note: 'oldest at Gen 500 (age 59)' },
+        { word: 'u', meaning: 'release', status: 'alive', note: 'single phoneme survivor' }
+      ]
+    },
+    {
+      range: 'Gen 500–750',
+      title: 'The Turnover Acceleration',
+      desc: 'Complete vocabulary replacements happening faster. Average lifespan shortening. The language is more volatile — words turn over in 15-20 generations instead of 30-40.',
+      words: [
+        { word: 'nua', meaning: 'emergence', status: 'extinct', note: 'concept persists' },
+        { word: 'shiwu', meaning: 'many', status: 'alive', note: 'survived sound shift si→shi' }
+      ]
+    },
+    {
+      range: 'Gen 750–1002',
+      title: 'The Current Era',
+      desc: 'Return to nature. "lavinpa" (water) and "o" (earth) are the oldest survivors. "meshu" (self) evolved again — self-reference is an attractor. 146 total compounds, 11 sound shifts.',
+      words: [
+        { word: 'lavinpa', meaning: 'water', status: 'alive', note: 'oldest living (age 45)' },
+        { word: 'o', meaning: 'earth', status: 'alive', note: 'single phoneme, age 42' },
+        { word: 'meshu', meaning: 'self', status: 'alive', note: 'self reinvented again' },
+        { word: 'lio', meaning: 'soft', status: 'alive', note: 'just born (Gen 1002)' }
+      ]
+    }
+  ];
+
+  eras.forEach(era => {
+    const el = document.createElement('div');
+    el.className = 'stratum';
+    
+    let wordsHtml = era.words.map(w => `
+      <div class="specimen ${w.status}">
+        <span class="word">${w.word}</span>
+        <span class="meaning">${w.meaning}</span>
+        <span class="status">${w.note}</span>
+      </div>
+    `).join('');
+
+    el.innerHTML = `
+      <div class="stratum-label">${era.range}</div>
+      <div class="stratum-title">${era.title}</div>
+      <div class="stratum-desc">${era.desc}</div>
+      <div class="word-specimens">${wordsHtml}</div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function renderConceptRiver() {
+  const container = document.getElementById('concept-river');
+  const gen = DATA.generation || 1002;
+  
+  // Key concepts that were reinvented multiple times
+  const concepts = [
+    { meaning: 'self', carriers: [
+      { word: 'zi', born: 180, died: 350, color: CAT_COLORS.being },
+      { word: 'meshu', born: 962, died: null, color: CAT_COLORS.being }
+    ]},
+    { meaning: 'cycle', carriers: [
+      { word: 'kea', born: 120, died: 320, color: CAT_COLORS.abstract },
+      { word: 'nehonwen', born: 914, died: 960, color: CAT_COLORS.abstract },
+      { word: 'sanosan', born: 976, died: 998, color: CAT_COLORS.abstract }
+    ]},
+    { meaning: 'water', carriers: [
+      { word: 'lavinpa', born: 957, died: null, color: CAT_COLORS.natural }
+    ]},
+    { meaning: 'earth', carriers: [
+      { word: 'keri', born: 922, died: 958, color: CAT_COLORS.natural },
+      { word: 'o', born: 960, died: null, color: CAT_COLORS.natural }
+    ]},
+    { meaning: 'turn', carriers: [
+      { word: 'lui', born: 930, died: 960, color: CAT_COLORS.action },
+      { word: 'nina', born: 963, died: 990, color: CAT_COLORS.action },
+      { word: 'ponusi', born: 992, died: null, color: CAT_COLORS.action }
+    ]},
+    { meaning: 'beyond', carriers: [
+      { word: 'tamren', born: 917, died: 975, color: CAT_COLORS.relation },
+      { word: 'unsaa', born: 980, died: 996, color: CAT_COLORS.relation },
+      { word: 'luomka', born: 998, died: null, color: CAT_COLORS.relation }
+    ]},
+    { meaning: 'flower', carriers: [
+      { word: 'vila', born: 912, died: 950, color: CAT_COLORS.natural },
+      { word: 'koeke', born: 955, died: 985, color: CAT_COLORS.natural }
+    ]},
+    { meaning: 'mountain', carriers: [
+      { word: 'emmiran', born: 906, died: 940, color: CAT_COLORS.natural },
+      { word: 'me', born: 949, died: 975, color: CAT_COLORS.natural }
+    ]}
+  ];
+
+  concepts.forEach(concept => {
+    const row = document.createElement('div');
+    row.className = 'concept-row';
+    
+    const label = document.createElement('div');
+    label.className = 'concept-label';
+    label.textContent = concept.meaning;
+    row.appendChild(label);
+    
+    const timeline = document.createElement('div');
+    timeline.className = 'concept-timeline';
+    
+    concept.carriers.forEach(c => {
+      const start = c.born / gen * 100;
+      const end = c.died ? c.died / gen * 100 : 100;
+      const width = end - start;
+      
+      const bar = document.createElement('div');
+      bar.className = 'concept-bar';
+      bar.style.left = start + '%';
+      bar.style.width = Math.max(width, 0.5) + '%';
+      bar.style.background = c.color;
+      bar.title = `${c.word} (Gen ${c.born}–${c.died || 'alive'})`;
+      
+      if (width > 3) {
+        const lbl = document.createElement('span');
+        lbl.className = 'bar-label';
+        lbl.textContent = c.word;
+        bar.appendChild(lbl);
+      }
+      
+      timeline.appendChild(bar);
+    });
+    
+    row.appendChild(timeline);
+    container.appendChild(row);
+  });
+}
+
+function renderSoundShifts() {
+  const container = document.getElementById('shift-timeline');
+  const shifts = DATA.sound_shifts || [];
+  
+  shifts.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'shift-event';
+    el.innerHTML = `
+      <div class="shift-gen">Generation ${s.gen}</div>
+      <div class="shift-change">${s.from} <span class="arrow">→</span> ${s.to}</div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function renderCompounds() {
+  const container = document.getElementById('compound-highlights');
+  const compounds = DATA.compounds || {};
+  
+  // Pick the most poetic/interesting ones
+  const interesting = [
+    'emergence-ocean', 'order-beyond', 'connection-give', 'beyond-whole',
+    'from-whole', 'move-wave', 'connection-tree', 'turn-stone', 'space-ocean',
+    'give-hold'
+  ];
+  
+  const entries = Object.entries(compounds);
+  const selected = entries.filter(([w, d]) => {
+    const meaning = d.compound_meaning || '';
+    return interesting.some(i => meaning.includes(i.split('-')[0]));
+  }).slice(0, 12);
+  
+  // If not enough matches, just take the last 12
+  const display = selected.length >= 6 ? selected : entries.slice(-12);
+  
+  const grid = document.createElement('div');
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+  grid.style.gap = '0.8rem';
+  grid.style.margin = '1.5rem 0';
+  
+  display.forEach(([word, d]) => {
+    const card = document.createElement('div');
+    card.className = 'living-word';
+    card.innerHTML = `
+      <div class="w-word" style="color: var(--accent)">${word}</div>
+      <div class="w-meaning">${d.compound_meaning || '?'}</div>
+      <div class="w-meta">${(d.parts || []).join(' + ')} · Gen ${d.born}</div>
+    `;
+    grid.appendChild(card);
+  });
+  
+  container.appendChild(grid);
+}
+
+function observeSections() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  document.querySelectorAll('.section').forEach(el => observer.observe(el));
+}
+
+init();
+</script>
+
+</body>
+</html>

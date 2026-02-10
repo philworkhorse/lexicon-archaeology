@@ -1,0 +1,12 @@
+{
+  "name": "lexicon-archaeology",
+  "version": "1.0.0",
+  "description": "Archaeological layers of a 1000-generation evolving language",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
